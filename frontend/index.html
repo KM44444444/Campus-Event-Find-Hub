@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Campus Event & Find Hub</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+/* -------------------- BASIC CSS -------------------- */
+body {
+  font-family: Arial, sans-serif;
+  background: #f2f2f2;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  width: 95%;
+  max-width: 900px;
+  margin: 20px auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+h2, h3 {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 6px;
+  margin-bottom: 15px;
+  border: 1px solid #aaa;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: #007bff;
+  color: white;
+}
+
+.btn-ghost {
+  background: #eee;
+}
+
+#uploadSection,
+#adminPanel,
+#studentDashboard,
+#adminEventUpload,
+#eventDisplaySection,
+#itemsDisplaySection {
+  display: none;
+  margin-top: 25px;
+}
+
+/* Login Tabs */
+.tabs {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+
+.tab {
+  width: 50%;
+  padding: 10px;
+  text-align: center;
+  cursor: pointer;
+  background: #ddd;
+}
+
+.tab.active {
+  background: #007bff;
+  color: #fff;
+}
+
+.card {
+  background:#eee;
+  padding:10px;
+  margin-top:10px;
+  border-radius:8px;
+}
+
+.badge {
+  display:inline-block;
+  font-size:12px;
+  padding:2px 8px;
+  border-radius:10px;
+  color:#fff;
+}
+.badge.lost { background:#dc3545; }
+.badge.found { background:#28a745; }
+
+.status-msg {
+  text-align:center;
+  min-height:18px;
+  font-size:14px;
+}
+.status-msg.error { color:#c0392b; }
+.status-msg.ok { color:#1e7e34; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h2>Campus Event & Find Hub</h2>
+<p id="apiStatus" class="status-msg"></p>
+
+<!-- -------------------- LOGIN AREA -------------------- -->
+<div id="authArea">
+  <div class="tabs">
+    <div id="adminTab" class="tab active">Admin Login</div>
+    <div id="studentTab" class="tab">Student Login</div>
+  </div>
+
+  <form id="loginForm">
+    <h3 id="loginTitle">Admin Login</h3>
+
+    <label>Email</label>
+    <input type="email" id="username" required>
+
+    <label>Password</label>
+    <input type="password" id="password" required>
+
+    <button class="btn-primary" type="submit" style="width:100%;">Login</button>
+
+    <p id="loginError" class="status-msg error" style="display:none;"></p>
+  </form>
+
+  <button id="forgotBtn" class="btn-ghost" style="width:100%; margin-top:10px;">Forgot Password?</button>
+  <button id="registerBtn" class="btn-ghost" style="width:100%; margin-top:10px;">New Student? Register</button>
+</div>
+
+
+<!-- -------------------- REGISTER FORM -------------------- -->
+<div id="registerBox" style="display:none; margin-top:20px;">
+  <h3>Student Registration</h3>
+
+  <label>Email (This will be your username)</label>
+  <input type="email" id="regEmail">
+
+  <label>Password (min 6 characters)</label>
+  <input type="password" id="regPass">
+
+  <button class="btn-primary" id="createAccountBtn">Create Account</button>
+  <button class="btn-ghost" id="closeRegister">Cancel</button>
+  <p id="registerMsg" class="status-msg"></p>
+</div>
+
+
+
+<!-- -------------------- OTP POPUP -------------------- -->
+<div id="otpBox" style="
+position:fixed; top:0; left:0; right:0; bottom:0;
+background:rgba(0,0,0,0.6); display:none;
+align-items:center; justify-content:center;">
+  <div style="background:white; padding:20px; width:320px; border-radius:12px;">
+    <h3>Reset Password</h3>
+
+    <label>Enter Registered Email</label>
+    <input type="email" id="otpEmailInput">
+
+    <button class="btn-primary" id="sendOTP" style="width:100%;">Send OTP</button>
+
+    <div id="otpStep" style="display:none; margin-top:15px;">
+      <label>Enter OTP</label>
+      <input type="text" id="otpInput">
+
+      <label>New Password</label>
+      <input type="password" id="newPassInput">
+
+      <button class="btn-primary" id="resetPassBtn" style="width:100%;">Update Password</button>
+    </div>
+
+    <p id="otpMsg" class="status-msg"></p>
+    <button class="btn-ghost" id="otpClose" style="width:100%; margin-top:10px;">Close</button>
+  </div>
+</div>
+
+
+
+<!-- -------------------- ADMIN PANEL -------------------- -->
+<div id="adminPanel">
+  <h3>Pending Student Approvals</h3>
+  <ul id="pendingList"></ul>
+</div>
+
+
+
+<!-- -------------------- ADMIN EVENT UPLOAD -------------------- -->
+<div id="adminEventUpload">
+  <h3>Upload Event Details</h3>
+
+  <label>Event Title</label>
+  <input type="text" id="eventTitle">
+
+  <label>Event Description</label>
+  <input type="text" id="eventDesc">
+
+  <label>Event Image</label>
+  <input type="file" id="eventPhoto" accept="image/*">
+
+  <button class="btn-primary" id="uploadEventBtn" style="width:100%;">Upload Event</button>
+  <p id="eventMsg" class="status-msg"></p>
+</div>
+
+
+
+<!-- -------------------- STUDENT DASHBOARD -------------------- -->
+<div id="studentDashboard">
+  <h3>Student Dashboard</h3>
+
+  <div id="uploadSection">
+    <h3>Report Lost / Found Item</h3>
+
+    <label>Type</label>
+    <select id="lostFoundType">
+      <option value="lost">Lost</option>
+      <option value="found">Found</option>
+    </select>
+
+    <label>Item Name</label>
+    <input type="text" id="lostTitle">
+
+    <label>Description</label>
+    <input type="text" id="lostDesc">
+
+    <label>Image</label>
+    <input type="file" id="lostPhoto" accept="image/*">
+
+    <button class="btn-primary" id="uploadLostBtn" style="width:100%;">Submit Detail</button>
+    <p id="lostMsg" class="status-msg"></p>
+  </div>
+</div>
+
+<!-- -------------------- EVENT DISPLAY -------------------- -->
+<div id="eventDisplaySection">
+  <h3>College Events</h3>
+  <div id="eventList"></div>
+</div>
+
+<!-- -------------------- LOST & FOUND BOARD -------------------- -->
+<div id="itemsDisplaySection">
+  <h3>Lost & Found Board</h3>
+  <div id="itemList"></div>
+</div>
+
+
+<!-- -------------------- FOOTER -------------------- -->
+<div style="text-align:center; margin-top:20px;">
+  <button id="logoutBtn" class="btn-ghost" style="display:none;">Logout</button>
+</div>
+
+</div> <!-- container ends -->
+
+
+
+<script>
+/* --------------------------------------------------------------
+   CONFIG
+-------------------------------------------------------------- */
+const API_BASE = "http://localhost:4000";
+
+/* --------------------------------------------------------------
+   SESSION STATE
+   Token lives in sessionStorage so a reload doesn't force a
+   re-login mid-session, but it's cleared when the tab closes.
+   No credentials are ever hardcoded or stored client-side.
+-------------------------------------------------------------- */
+let session = {
+  token: sessionStorage.getItem("chub_token") || null,
+  role: sessionStorage.getItem("chub_role") || null,
+  email: sessionStorage.getItem("chub_email") || null
+};
+
+function setSession(token, role, email) {
+  session = { token, role, email };
+  sessionStorage.setItem("chub_token", token);
+  sessionStorage.setItem("chub_role", role);
+  sessionStorage.setItem("chub_email", email);
+}
+
+function clearSession() {
+  session = { token: null, role: null, email: null };
+  sessionStorage.removeItem("chub_token");
+  sessionStorage.removeItem("chub_role");
+  sessionStorage.removeItem("chub_email");
+}
+
+function authHeaders() {
+  return session.token ? { "Authorization": "Bearer " + session.token } : {};
+}
+
+/* Escape any text before it ever touches innerHTML, since event
+   and item data now comes from other users via the shared backend. */
+function esc(str) {
+  const div = document.createElement("div");
+  div.textContent = str == null ? "" : String(str);
+  return div.innerHTML;
+}
+
+/* Quick backend reachability check so errors are clear rather than
+   a silent failed fetch. */
+async function checkApi() {
+  const statusEl = document.getElementById("apiStatus");
+  try {
+    const res = await fetch(API_BASE + "/");
+    if (res.ok) {
+      statusEl.textContent = "";
+    } else {
+      throw new Error("bad status");
+    }
+  } catch {
+    statusEl.textContent = "⚠️ Can't reach the backend at " + API_BASE + ". Start it with 'npm start' in /backend.";
+    statusEl.className = "status-msg error";
+  }
+}
+checkApi();
+
+/* -------------------- TABS -------------------- */
+document.getElementById("adminTab").onclick = function(){
+  this.classList.add("active");
+  document.getElementById("studentTab").classList.remove("active");
+  document.getElementById("loginTitle").innerText = "Admin Login";
+}
+
+document.getElementById("studentTab").onclick = function(){
+  this.classList.add("active");
+  document.getElementById("adminTab").classList.remove("active");
+  document.getElementById("loginTitle").innerText = "Student Login";
+}
+
+/* -------------------- LOGIN -------------------- */
+document.getElementById("loginForm").onsubmit = async function(e){
+  e.preventDefault();
+
+  const email = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value;
+  const role = document.getElementById("loginTitle").innerText;
+  const endpoint = role === "Admin Login" ? "/api/admin/login" : "/api/student/login";
+
+  try {
+    const res = await fetch(API_BASE + endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      return showError(data.message || "Login failed");
+    }
+
+    document.getElementById("loginError").style.display = "none";
+    const actualRole = role === "Admin Login" ? "admin" : "student";
+    setSession(data.token, actualRole, email);
+    enterApp();
+  } catch (err) {
+    showError("Could not reach the server. Is the backend running?");
+  }
+}
+
+function showError(msg){
+  const x = document.getElementById("loginError");
+  x.style.display = "block";
+  x.innerText = msg;
+}
+
+function enterApp(){
+  document.getElementById("authArea").style.display = "none";
+  document.getElementById("registerBox").style.display = "none";
+  document.getElementById("logoutBtn").style.display = "block";
+  document.getElementById("eventDisplaySection").style.display = "block";
+  document.getElementById("itemsDisplaySection").style.display = "block";
+  loadEvents();
+  loadItems();
+
+  if (session.role === "admin") {
+    document.getElementById("adminPanel").style.display = "block";
+    document.getElementById("adminEventUpload").style.display = "block";
+    loadPendingUsers();
+  } else {
+    document.getElementById("studentDashboard").style.display = "block";
+    document.getElementById("uploadSection").style.display = "block";
+  }
+}
+
+/* Restore session on page load without a fresh login */
+if (session.token) {
+  enterApp();
+}
+
+/* Logout */
+document.getElementById("logoutBtn").onclick = function(){
+  clearSession();
+  location.reload();
+}
+
+/* -------------------- REGISTRATION -------------------- */
+document.getElementById("registerBtn").onclick = ()=>{
+  document.getElementById("registerBox").style.display="block";
+}
+
+document.getElementById("closeRegister").onclick = ()=>{
+  document.getElementById("registerBox").style.display="none";
+}
+
+document.getElementById("createAccountBtn").onclick = async ()=>{
+  const email = document.getElementById("regEmail").value.trim();
+  const password = document.getElementById("regPass").value;
+  const msg = document.getElementById("registerMsg");
+
+  if(!email || !password){
+    msg.className = "status-msg error";
+    msg.textContent = "Fill all fields";
+    return;
+  }
+
+  try {
+    const res = await fetch(API_BASE + "/api/student/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+
+    msg.className = "status-msg " + (data.success ? "ok" : "error");
+    msg.textContent = data.message || (data.success ? "Registered." : "Registration failed.");
+
+    if (data.success) {
+      document.getElementById("regEmail").value = "";
+      document.getElementById("regPass").value = "";
+    }
+  } catch {
+    msg.className = "status-msg error";
+    msg.textContent = "Could not reach the server.";
+  }
+}
+
+/* -------------------- ADMIN APPROVAL -------------------- */
+async function loadPendingUsers(){
+  const list = document.getElementById("pendingList");
+  list.innerHTML = "";
+
+  try {
+    const res = await fetch(API_BASE + "/api/admin/pending", { headers: authHeaders() });
+    const data = await res.json();
+    if (!data.success) return;
+
+    data.pending.forEach(u => {
+      const li = document.createElement("li");
+      const label = document.createTextNode(u.email + " ");
+      const btn = document.createElement("button");
+      btn.textContent = "Approve";
+      btn.onclick = () => approveUser(u.email);
+      li.appendChild(label);
+      li.appendChild(btn);
+      list.appendChild(li);
+    });
+  } catch {
+    // silently skip if backend unreachable; apiStatus banner already covers it
+  }
+}
+
+async function approveUser(email){
+  try {
+    const res = await fetch(API_BASE + "/api/admin/approve", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...authHeaders() },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    alert(data.message || "Done");
+    loadPendingUsers();
+  } catch {
+    alert("Could not reach the server.");
+  }
+}
+
+/* -------------------- EVENT UPLOAD -------------------- */
+document.getElementById("uploadEventBtn").onclick = async () => {
+  const title = document.getElementById("eventTitle").value.trim();
+  const desc = document.getElementById("eventDesc").value.trim();
+  const photoInput = document.getElementById("eventPhoto").files[0];
+  const msg = document.getElementById("eventMsg");
+
+  if(!title || !desc){
+    msg.className = "status-msg error";
+    msg.textContent = "Fill all fields";
+    return;
+  }
+
+  const form = new FormData();
+  form.append("title", title);
+  form.append("description", desc);
+  if (photoInput) form.append("photo", photoInput);
+
+  try {
+    const res = await fetch(API_BASE + "/api/event/upload", {
+      method: "POST",
+      headers: authHeaders(), // don't set Content-Type manually for FormData
+      body: form
+    });
+    const data = await res.json();
+
+    msg.className = "status-msg " + (data.success ? "ok" : "error");
+    msg.textContent = data.message || "Done";
+
+    if (data.success) {
+      document.getElementById("eventTitle").value = "";
+      document.getElementById("eventDesc").value = "";
+      document.getElementById("eventPhoto").value = "";
+      loadEvents();
+    }
+  } catch {
+    msg.className = "status-msg error";
+    msg.textContent = "Could not reach the server.";
+  }
+}
+
+async function loadEvents(){
+  const container = document.getElementById("eventList");
+  container.innerHTML = "";
+
+  try {
+    const res = await fetch(API_BASE + "/api/events/all");
+    const events = await res.json();
+
+    events.forEach(ev => {
+      const div = document.createElement("div");
+      div.className = "card";
+      div.innerHTML = `
+        <h4>${esc(ev.title)}</h4>
+        <p>${esc(ev.description)}</p>
+        <small>${esc(new Date(ev.created_at).toLocaleString())} • posted by ${esc(ev.posted_by)}</small><br>
+        ${ev.photo ? `<img src="${esc(API_BASE + ev.photo)}" style="width:100%; margin-top:8px; border-radius:8px;">` : ""}
+      `;
+      container.appendChild(div);
+    });
+
+    if (events.length === 0) {
+      container.innerHTML = "<p>No events yet.</p>";
+    }
+  } catch {
+    container.innerHTML = "<p>Could not load events — is the backend running?</p>";
+  }
+}
+
+/* -------------------- LOST & FOUND -------------------- */
+document.getElementById("uploadLostBtn").onclick = async () => {
+  const type = document.getElementById("lostFoundType").value; // "lost" | "found"
+  const name = document.getElementById("lostTitle").value.trim();
+  const desc = document.getElementById("lostDesc").value.trim();
+  const photo = document.getElementById("lostPhoto").files[0];
+  const msg = document.getElementById("lostMsg");
+
+  if(!name || !desc){
+    msg.className = "status-msg error";
+    msg.textContent = "Fill all fields";
+    return;
+  }
+
+  const form = new FormData();
+  form.append("name", name);
+  form.append("description", desc);
+  if (photo) form.append("photo", photo);
+
+  const endpoint = type === "found" ? "/api/upload/found" : "/api/upload/lost";
+
+  try {
+    const res = await fetch(API_BASE + endpoint, {
+      method: "POST",
+      headers: authHeaders(),
+      body: form
+    });
+    const data = await res.json();
+
+    msg.className = "status-msg " + (data.success ? "ok" : "error");
+    msg.textContent = data.message || "Done";
+
+    if (data.success) {
+      document.getElementById("lostTitle").value = "";
+      document.getElementById("lostDesc").value = "";
+      document.getElementById("lostPhoto").value = "";
+      loadItems();
+    }
+  } catch {
+    msg.className = "status-msg error";
+    msg.textContent = "Could not reach the server.";
+  }
+}
+
+async function loadItems(){
+  const container = document.getElementById("itemList");
+  container.innerHTML = "";
+
+  try {
+    const res = await fetch(API_BASE + "/api/items/all");
+    const items = await res.json();
+
+    items.forEach(it => {
+      const div = document.createElement("div");
+      div.className = "card";
+      div.innerHTML = `
+        <span class="badge ${it.type === "found" ? "found" : "lost"}">${esc(it.type)}</span>
+        <h4 style="margin:6px 0 2px;">${esc(it.name)}</h4>
+        <p>${esc(it.description)}</p>
+        <small>${esc(new Date(it.created_at).toLocaleString())} • posted by ${esc(it.posted_by)}</small><br>
+        ${it.photo ? `<img src="${esc(API_BASE + it.photo)}" style="width:100%; margin-top:8px; border-radius:8px;">` : ""}
+      `;
+      container.appendChild(div);
+    });
+
+    if (items.length === 0) {
+      container.innerHTML = "<p>No lost/found items posted yet.</p>";
+    }
+  } catch {
+    container.innerHTML = "<p>Could not load items — is the backend running?</p>";
+  }
+}
+
+/* -------------------- FORGOT PASSWORD (real OTP via backend) -------------------- */
+document.getElementById("forgotBtn").onclick = ()=>{
+  document.getElementById("otpBox").style.display="flex";
+}
+
+document.getElementById("otpClose").onclick = ()=>{
+  document.getElementById("otpBox").style.display="none";
+  document.getElementById("otpStep").style.display="none";
+  document.getElementById("otpMsg").textContent = "";
+}
+
+document.getElementById("sendOTP").onclick = async ()=>{
+  const email = document.getElementById("otpEmailInput").value.trim();
+  const msg = document.getElementById("otpMsg");
+
+  if (!email) {
+    msg.className = "status-msg error";
+    msg.textContent = "Enter your email first";
+    return;
+  }
+
+  try {
+    const res = await fetch(API_BASE + "/api/otp/request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+
+    msg.className = "status-msg " + (data.success ? "ok" : "error");
+    msg.textContent = data.message || "Done";
+
+    if (data.success) {
+      document.getElementById("otpStep").style.display = "block";
+    }
+  } catch {
+    msg.className = "status-msg error";
+    msg.textContent = "Could not reach the server.";
+  }
+}
+
+document.getElementById("resetPassBtn").onclick = async ()=>{
+  const email = document.getElementById("otpEmailInput").value.trim();
+  const otp = document.getElementById("otpInput").value.trim();
+  const newPassword = document.getElementById("newPassInput").value;
+  const msg = document.getElementById("otpMsg");
+
+  try {
+    const res = await fetch(API_BASE + "/api/otp/reset", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, otp, newPassword })
+    });
+    const data = await res.json();
+
+    msg.className = "status-msg " + (data.success ? "ok" : "error");
+    msg.textContent = data.message || "Done";
+
+    if (data.success) {
+      setTimeout(() => {
+        document.getElementById("otpBox").style.display = "none";
+        document.getElementById("otpStep").style.display = "none";
+      }, 1200);
+    }
+  } catch {
+    msg.className = "status-msg error";
+    msg.textContent = "Could not reach the server.";
+  }
+}
+
+</script>
+
+</body>
+</html>
