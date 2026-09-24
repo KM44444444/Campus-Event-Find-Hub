@@ -135,6 +135,9 @@ button {
 
     <button class="btn-primary" type="submit" style="width:100%;">Login</button>
 
+    <button id="demoBtn" class="btn-ghost" type="button" style="width:100%; margin-top:10px;">Explore as Admin (Demo)</button>
+    <p style="text-align:center; color:#555; font-size:13px;">Browse events and lost &amp; found without an account. Demo access is view-only.</p>
+
     <p id="loginError" class="status-msg error" style="display:none;"></p>
   </form>
 
@@ -333,12 +336,20 @@ document.getElementById("adminTab").onclick = function(){
   this.classList.add("active");
   document.getElementById("studentTab").classList.remove("active");
   document.getElementById("loginTitle").innerText = "Admin Login";
+  document.getElementById("demoBtn").innerText = "Explore as Admin (Demo)";
 }
 
 document.getElementById("studentTab").onclick = function(){
   this.classList.add("active");
   document.getElementById("adminTab").classList.remove("active");
   document.getElementById("loginTitle").innerText = "Student Login";
+  document.getElementById("demoBtn").innerText = "Explore as Student (Demo)";
+}
+
+/* Public, read-only demo access is available from either login tab. */
+document.getElementById("demoBtn").onclick = function(){
+  session = { token: null, role: "demo", email: null };
+  enterApp();
 }
 
 /* -------------------- LOGIN -------------------- */
@@ -380,7 +391,10 @@ function showError(msg){
 function enterApp(){
   document.getElementById("authArea").style.display = "none";
   document.getElementById("registerBox").style.display = "none";
-  document.getElementById("logoutBtn").style.display = "block";
+  const isDemo = session.role === "demo";
+  const exitBtn = document.getElementById("logoutBtn");
+  exitBtn.style.display = "block";
+  exitBtn.textContent = isDemo ? "Exit Demo" : "Logout";
   document.getElementById("eventDisplaySection").style.display = "block";
   document.getElementById("itemsDisplaySection").style.display = "block";
   loadEvents();
@@ -390,7 +404,7 @@ function enterApp(){
     document.getElementById("adminPanel").style.display = "block";
     document.getElementById("adminEventUpload").style.display = "block";
     loadPendingUsers();
-  } else {
+  } else if (session.role === "student") {
     document.getElementById("studentDashboard").style.display = "block";
     document.getElementById("uploadSection").style.display = "block";
   }
