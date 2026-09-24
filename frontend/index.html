@@ -372,20 +372,19 @@ function esc(str) {
   return div.innerHTML;
 }
 
-/* Quick backend reachability check so errors are clear rather than
-   a silent failed fetch. */
+/* Optional backend reachability check. This is intentionally quiet so the
+   frontend does not show a misleading localhost warning in deployed setups. */
 async function checkApi() {
   const statusEl = document.getElementById("apiStatus");
   try {
     const res = await fetch(API_BASE + "/");
-    if (res.ok) {
+    if (!res.ok) {
       statusEl.textContent = "";
-    } else {
-      throw new Error("bad status");
+      statusEl.className = "status-msg";
     }
   } catch {
-    statusEl.textContent = "⚠️ Can't reach the backend at " + API_BASE + ". Start it with 'npm start' in /backend.";
-    statusEl.className = "status-msg error";
+    statusEl.textContent = "";
+    statusEl.className = "status-msg";
   }
 }
 checkApi();
