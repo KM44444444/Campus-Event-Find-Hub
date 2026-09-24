@@ -10,13 +10,16 @@ const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const os = require("os");
 const nodemailer = require("nodemailer");
 const cors = require("cors");
 
 // ---------- CONFIG ----------
 const PORT = Number(process.env.PORT || 4000);
 const JWT_SECRET = process.env.JWT_SECRET || "supersecretkey_change";
-const UPLOAD_DIR = path.join(__dirname, "uploads");
+// Vercel's deployed bundle is read-only. /tmp is writable, but ephemeral.
+const RUNTIME_DIR = process.env.VERCEL ? os.tmpdir() : __dirname;
+const UPLOAD_DIR = path.join(RUNTIME_DIR, "campus-hub-uploads");
 const OTP_EXPIRY_SECONDS = parseInt(process.env.OTP_EXPIRY_SECONDS || "900", 10);
 
 // ensure uploads folder exists
@@ -57,7 +60,7 @@ app.use(cors());
 app.use("/uploads", express.static(UPLOAD_DIR));
 
 // ---------- DB ----------
-const DB_PATH = path.join(__dirname, "db.sqlite");
+const DB_PATH = process.env.DB_PATH || path.join(RUNTIME_DIR, "db.sqlite");
 const db = new sqlite3.Database(DB_PATH, (err) => {
   if (err) console.error("SQLite error:", err);
   else console.log("SQLite connected:", DB_PATH);
@@ -83,6 +86,15 @@ function all(sql, params = []) {
     db.all(sql, params, (err, rows) => err ? reject(err) : resolve(rows));
   });
 }
+
+// Do not serve a request until the schema and default admin are ready.
+let dbReady;
+app.use((req, res, next) => {
+  dbReady.then(() => next()).catch((err) => {
+    console.error("Database initialization failed:", err);
+    res.status(500).json({ success: false, message: "Database initialization failed" });
+  });
+});
 
 // ---------- DB INIT ----------
 async function initDb() {
@@ -343,9 +355,18 @@ app.post("/api/otp/reset", async (req, res) => {
   res.json({ success:true, message:"Password updated. Please log in." });
 });
 
-// ✅ START SERVER
-initDb().then(() => {
-  app.listen(PORT, () => {
-    console.log(`✅ Server running on port ${PORT}`);
+// Vercel imports the Express app; local development starts a regular server.
+dbReady = initDb();
+
+if (process.env.VERCEL) {
+  module.exports = app;
+} else {
+  dbReady.then(() => {
+    app.listen(PORT, () => {
+      console.log(`✅ Server running on port ${PORT}`);
+    });
+  }).catch((err) => {
+    console.error("Database initialization failed:", err);
+    process.exitCode = 1;
   });
-});
+}

@@ -63,6 +63,22 @@ Then open http://localhost:3000. Opening `index.html` directly by
 double-clicking it also works, since it makes cross-origin requests to the
 backend rather than needing to be served from the same origin.
 
+### Deploy the backend to Vercel
+
+Create a Vercel project with the repository's **Root Directory** set to
+`backend`. The Express app is exported for Vercel, and runtime SQLite and
+upload files are placed under `/tmp` because the deployed application bundle
+is read-only. Set `JWT_SECRET`, `ADMIN_EMAIL`, and `ADMIN_PASSWORD` in the
+Vercel project's Environment Variables before deploying. After deployment,
+open the backend URL to confirm it returns `Campus Hub Backend Running`.
+
+Vercel's `/tmp` storage is temporary and may be reset or differ between
+function instances. This setup is suitable for previewing the app, but data
+and uploaded images are not durable across deployments or instances. For a
+production deployment, use a hosted persistent database and object storage.
+The frontend's `API_BASE` in `frontend/index.html` must also be set to the
+deployed backend URL (without a trailing slash) before deploying the frontend.
+
 ## Default Admin Login
 - Email: `kshitiz.mandola.cseds.2024@miet.ac.in`
 - Password: `12345678`
