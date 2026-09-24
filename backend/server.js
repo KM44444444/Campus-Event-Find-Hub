@@ -137,9 +137,17 @@ async function initDb() {
       description TEXT,
       photo TEXT,
       posted_by TEXT,
-      created_at INTEGER
+      created_at INTEGER,
+      approved INTEGER DEFAULT 1
     )
   `);
+
+  const itemColumns = await all("PRAGMA table_info(items)");
+  const hasApprovedColumn = itemColumns.some((col) => col.name === "approved");
+  if (!hasApprovedColumn) {
+    await run("ALTER TABLE items ADD COLUMN approved INTEGER DEFAULT 1");
+  }
+  await run("UPDATE items SET approved = 1 WHERE approved IS NULL");
 
   const adminEmail = process.env.ADMIN_EMAIL || "kshitiz.mandola.cseds.2024@miet.ac.in";
   const adminPassword = process.env.ADMIN_PASSWORD || "12345678";
@@ -253,6 +261,21 @@ app.post("/api/admin/approve", authMiddleware, adminOnly, async (req, res) => {
   res.json({ success:true, message:"Student approved" });
 });
 
+app.post("/api/admin/reject-student", authMiddleware, adminOnly, async (req, res) => {
+  const { email } = req.body || {};
+  if (!email) {
+    return res.status(400).json({ success:false, message:"Email is required" });
+  }
+
+  const user = await get("SELECT * FROM users WHERE email=?", [email]);
+  if (!user) {
+    return res.status(404).json({ success:false, message:"Student not found" });
+  }
+
+  await run("DELETE FROM users WHERE email=?", [email]);
+  res.json({ success:true, message:"Student request rejected and removed." });
+});
+
 // ✅ Upload Event
 app.post("/api/event/upload", authMiddleware, adminOnly, upload.single("photo"), async (req, res) => {
   if (!req.body.title || !req.body.description) {
@@ -279,10 +302,10 @@ app.post("/api/upload/lost", authMiddleware, upload.single("photo"), async (req,
   }
   const photo = req.file ? `/uploads/${req.file.filename}` : "";
   await run(
-    "INSERT INTO items (type,name,description,photo,posted_by,created_at) VALUES (?,?,?,?,?,?)",
-    ["lost", req.body.name, req.body.description, photo, req.user.email, Date.now()]
+    "INSERT INTO items (type,name,description,photo,posted_by,created_at,approved) VALUES (?,?,?,?,?,?,?)",
+    ["lost", req.body.name, req.body.description, photo, req.user.email, Date.now(), 0]
   );
-  res.json({ success:true, message:"Lost item posted" });
+  res.json({ success:true, message:"Lost item submitted for admin approval." });
 });
 
 // ✅ Upload Found
@@ -292,16 +315,41 @@ app.post("/api/upload/found", authMiddleware, upload.single("photo"), async (req
   }
   const photo = req.file ? `/uploads/${req.file.filename}` : "";
   await run(
-    "INSERT INTO items (type,name,description,photo,posted_by,created_at) VALUES (?,?,?,?,?,?)",
-    ["found", req.body.name, req.body.description, photo, req.user.email, Date.now()]
+    "INSERT INTO items (type,name,description,photo,posted_by,created_at,approved) VALUES (?,?,?,?,?,?,?)",
+    ["found", req.body.name, req.body.description, photo, req.user.email, Date.now(), 0]
   );
-  res.json({ success:true, message:"Found item posted" });
+  res.json({ success:true, message:"Found item submitted for admin approval." });
 });
 
 // ✅ Get All Items
 app.get("/api/items/all", async (req, res) => {
-  const rows = await all("SELECT * FROM items ORDER BY id DESC");
+  const rows = await all("SELECT * FROM items WHERE approved = 1 ORDER BY id DESC");
   res.json(rows);
+});
+
+app.get("/api/admin/pending-items", authMiddleware, adminOnly, async (req, res) => {
+  const rows = await all("SELECT * FROM items WHERE approved = 0 ORDER BY id DESC");
+  res.json({ success: true, pending: rows });
+});
+
+app.post("/api/admin/approve-item", authMiddleware, adminOnly, async (req, res) => {
+  const { id } = req.body || {};
+  if (!id) {
+    return res.status(400).json({ success: false, message: "Item id is required" });
+  }
+
+  await run("UPDATE items SET approved = 1 WHERE id = ?", [id]);
+  res.json({ success: true, message: "Item approved and published." });
+});
+
+app.post("/api/admin/reject-item", authMiddleware, adminOnly, async (req, res) => {
+  const { id } = req.body || {};
+  if (!id) {
+    return res.status(400).json({ success: false, message: "Item id is required" });
+  }
+
+  await run("DELETE FROM items WHERE id = ?", [id]);
+  res.json({ success: true, message: "Item rejected and removed." });
 });
 
 // ✅ Request OTP (forgot password)
@@ -316,6 +364,10 @@ app.post("/api/otp/request", async (req, res) => {
   const expiresAt = Date.now() + OTP_EXPIRY_SECONDS * 1000;
   await run("INSERT INTO otps (email, otp, expires_at) VALUES (?,?,?)", [email, otp, expiresAt]);
 
+  if (demoMode) {
+    console.log(`OTP for ${email}: ${otp}`);
+  }
+
   try {
     await transporter.sendMail({
       from: demoMode ? "Campus Hub <demo@campushub.local>" : process.env.SMTP_USER,
@@ -327,7 +379,9 @@ app.post("/api/otp/request", async (req, res) => {
     console.error("Email send failed, OTP still valid:", err.message);
   }
 
-  res.json({ success:true, message:"OTP sent (check email, or server console if SMTP is not configured)" });
+  res.json({ success:true, message: demoMode
+    ? "OTP generated. Check the backend console for the code."
+    : "OTP sent (check email)" });
 });
 
 // ✅ Reset Password with OTP
@@ -344,9 +398,7 @@ app.post("/api/otp/reset", async (req, res) => {
   if (!row) return res.status(400).json({ success:false, message:"No OTP found for this email" });
   if (row.expires_at < Date.now()) return res.status(400).json({ success:false, message:"OTP expired" });
 
-  // In demo mode, accept any OTP; in production, verify the OTP matches
-  const isDemoMode = !process.env.SMTP_USER || !process.env.SMTP_PASS;
-  if (!isDemoMode && row.otp !== otp) return res.status(400).json({ success:false, message:"Invalid OTP" });
+  if (row.otp !== otp) return res.status(400).json({ success:false, message:"Invalid OTP" });
 
   const hash = await bcrypt.hash(newPassword, 10);
   await run("UPDATE users SET password=? WHERE email=?", [hash, email]);

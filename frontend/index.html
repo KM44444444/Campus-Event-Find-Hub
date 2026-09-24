@@ -64,6 +64,62 @@ button {
   margin-top: 25px;
 }
 
+#pendingList,
+#pendingItemList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.pending-item,
+.item-review-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background: #f7f7f7;
+  border: 1px solid #e1e1e1;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+
+.pending-meta,
+.item-review-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pending-email,
+.item-review-name {
+  font-weight: bold;
+}
+
+.pending-date,
+.item-review-detail {
+  font-size: 12px;
+  color: #555;
+}
+
+.approve-btn,
+.reject-btn {
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  min-width: 100px;
+}
+
+.approve-btn {
+  background: #28a745;
+}
+
+.reject-btn {
+  background: #dc3545;
+}
+
 /* Login Tabs */
 .tabs {
   display: flex;
@@ -197,6 +253,9 @@ align-items:center; justify-content:center;">
 <div id="adminPanel">
   <h3>Pending Student Approvals</h3>
   <ul id="pendingList"></ul>
+
+  <h3 style="margin-top:24px;">Pending Lost &amp; Found Requests</h3>
+  <ul id="pendingItemList"></ul>
 </div>
 
 
@@ -404,6 +463,7 @@ function enterApp(){
     document.getElementById("adminPanel").style.display = "block";
     document.getElementById("adminEventUpload").style.display = "block";
     loadPendingUsers();
+    loadPendingItems();
   } else if (session.role === "student") {
     document.getElementById("studentDashboard").style.display = "block";
     document.getElementById("uploadSection").style.display = "block";
@@ -470,20 +530,158 @@ async function loadPendingUsers(){
   try {
     const res = await fetch(API_BASE + "/api/admin/pending", { headers: authHeaders() });
     const data = await res.json();
-    if (!data.success) return;
+
+    if (!data.success) {
+      list.innerHTML = "<li class='pending-item'><span class='pending-meta'><span class='pending-email'>Unable to load requests</span></span></li>";
+      return;
+    }
+
+    if (!data.pending || data.pending.length === 0) {
+      list.innerHTML = "<li class='pending-item'><span class='pending-meta'><span class='pending-email'>No pending student requests</span></span></li>";
+      return;
+    }
 
     data.pending.forEach(u => {
       const li = document.createElement("li");
-      const label = document.createTextNode(u.email + " ");
-      const btn = document.createElement("button");
-      btn.textContent = "Approve";
-      btn.onclick = () => approveUser(u.email);
-      li.appendChild(label);
-      li.appendChild(btn);
+      li.className = "pending-item";
+
+      const meta = document.createElement("div");
+      meta.className = "pending-meta";
+
+      const email = document.createElement("span");
+      email.className = "pending-email";
+      email.textContent = u.email;
+
+      const created = document.createElement("span");
+      created.className = "pending-date";
+      created.textContent = u.created_at ? `Requested on ${new Date(u.created_at).toLocaleString()}` : "New request";
+
+      meta.appendChild(email);
+      meta.appendChild(created);
+
+      const actions = document.createElement("div");
+      actions.style.display = "flex";
+      actions.style.gap = "8px";
+
+      const approveBtn = document.createElement("button");
+      approveBtn.className = "approve-btn";
+      approveBtn.textContent = "Approve";
+      approveBtn.onclick = () => approveUser(u.email);
+
+      const rejectBtn = document.createElement("button");
+      rejectBtn.className = "reject-btn";
+      rejectBtn.textContent = "Reject";
+      rejectBtn.onclick = () => rejectStudent(u.email);
+
+      actions.appendChild(approveBtn);
+      actions.appendChild(rejectBtn);
+
+      li.appendChild(meta);
+      li.appendChild(actions);
       list.appendChild(li);
     });
   } catch {
-    // silently skip if backend unreachable; apiStatus banner already covers it
+    list.innerHTML = "<li class='pending-item'><span class='pending-meta'><span class='pending-email'>Could not load pending requests</span></span></li>";
+  }
+}
+
+async function loadPendingItems(){
+  const list = document.getElementById("pendingItemList");
+  list.innerHTML = "";
+
+  try {
+    const res = await fetch(API_BASE + "/api/admin/pending-items", { headers: authHeaders() });
+    const data = await res.json();
+
+    if (!data.success) {
+      list.innerHTML = "<li class='item-review-item'><span class='item-review-meta'><span class='item-review-name'>Unable to load item requests</span></span></li>";
+      return;
+    }
+
+    if (!data.pending || data.pending.length === 0) {
+      list.innerHTML = "<li class='item-review-item'><span class='item-review-meta'><span class='item-review-name'>No pending lost & found requests</span></span></li>";
+      return;
+    }
+
+    data.pending.forEach(item => {
+      const li = document.createElement("li");
+      li.className = "item-review-item";
+
+      const meta = document.createElement("div");
+      meta.className = "item-review-meta";
+
+      const name = document.createElement("span");
+      name.className = "item-review-name";
+      name.textContent = `${item.type.toUpperCase()} • ${item.name}`;
+
+      const detail = document.createElement("span");
+      detail.className = "item-review-detail";
+      const description = item.description || "No description provided";
+      const photoText = item.photo ? "Image attached" : "No image";
+      detail.textContent = `${description} • ${photoText}`;
+
+      const sub = document.createElement("span");
+      sub.className = "item-review-detail";
+      sub.textContent = `Posted by ${item.posted_by} • ${new Date(item.created_at).toLocaleString()}`;
+
+      meta.appendChild(name);
+      meta.appendChild(detail);
+      meta.appendChild(sub);
+
+      const actions = document.createElement("div");
+      actions.style.display = "flex";
+      actions.style.gap = "8px";
+
+      const approveBtn = document.createElement("button");
+      approveBtn.className = "approve-btn";
+      approveBtn.textContent = "Approve";
+      approveBtn.onclick = () => approveItem(item.id);
+
+      const rejectBtn = document.createElement("button");
+      rejectBtn.className = "reject-btn";
+      rejectBtn.textContent = "Reject";
+      rejectBtn.onclick = () => rejectItem(item.id);
+
+      actions.appendChild(approveBtn);
+      actions.appendChild(rejectBtn);
+
+      li.appendChild(meta);
+      li.appendChild(actions);
+      list.appendChild(li);
+    });
+  } catch {
+    list.innerHTML = "<li class='item-review-item'><span class='item-review-meta'><span class='item-review-name'>Could not load item requests</span></span></li>";
+  }
+}
+
+async function approveItem(id){
+  try {
+    const res = await fetch(API_BASE + "/api/admin/approve-item", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...authHeaders() },
+      body: JSON.stringify({ id })
+    });
+    const data = await res.json();
+    alert(data.message || "Done");
+    loadPendingItems();
+    loadItems();
+  } catch {
+    alert("Could not reach the server.");
+  }
+}
+
+async function rejectItem(id){
+  try {
+    const res = await fetch(API_BASE + "/api/admin/reject-item", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...authHeaders() },
+      body: JSON.stringify({ id })
+    });
+    const data = await res.json();
+    alert(data.message || "Rejected");
+    loadPendingItems();
+  } catch {
+    alert("Could not reach the server.");
   }
 }
 
@@ -496,6 +694,21 @@ async function approveUser(email){
     });
     const data = await res.json();
     alert(data.message || "Done");
+    loadPendingUsers();
+  } catch {
+    alert("Could not reach the server.");
+  }
+}
+
+async function rejectStudent(email){
+  try {
+    const res = await fetch(API_BASE + "/api/admin/reject-student", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...authHeaders() },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    alert(data.message || "Rejected");
     loadPendingUsers();
   } catch {
     alert("Could not reach the server.");
