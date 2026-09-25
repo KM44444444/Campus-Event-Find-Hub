@@ -331,8 +331,15 @@ align-items:center; justify-content:center;">
 <script>
 /* --------------------------------------------------------------
    CONFIG
+   For deployment, set window.__API_BASE__ to your live backend URL
+   before this script runs, or keep the localhost fallback for local dev.
 -------------------------------------------------------------- */
-const API_BASE = "http://localhost:4000";
+const API_BASE = (
+  window.__API_BASE__ ||
+  (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? "http://localhost:4000"
+    : "https://your-backend.vercel.app")
+).replace(/\/+$/, "");
 
 /* --------------------------------------------------------------
    SESSION STATE
