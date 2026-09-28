@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Campus Event & Find Hub</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* -------------------- MODERN CSS -------------------- */
+:root {
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --bg-color: #f3f4f6;
+  --surface: #ffffff;
+  --text-main: #1f2937;
+  --text-muted: #6b7280;
+  --border: #e5e7eb;
+  --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-color);
+  color: var(--text-main);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.navbar {
+  width: 100%;
+  background: var(--surface);
+  padding: 15px 30px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar h1 {
+  font-size: 1.5rem;
+  margin: 0;
+  color: var(--primary);
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.container {
+  width: 95%;
+  max-width: 1000px;
+  margin: 40px auto;
+}
+
+.card {
+  background: var(--surface);
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  margin-bottom: 30px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+h2, h3, h4 {
+  margin-top: 0;
+  color: var(--text-main);
+}
+
+h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 12px 16px;
+  margin-top: 8px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: border-color 0.2s;
+  background: #f9fafb;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: #fff;
+}
+
+button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+  width: 100%;
+  box-shadow: 0 4px 6px rgba(79, 70, 229, 0.25);
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(79, 70, 229, 0.3);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  width: 100%;
+}
+
+.btn-ghost:hover {
+  background: #f3f4f6;
+  color: var(--text-main);
+}
+
+.btn-sm {
+  width: auto;
+  padding: 8px 12px;
+  font-size: 0.875rem;
+}
+
+/* Auth Area */
+#authArea {
+  max-width: 450px;
+  margin: 0 auto;
+}
+
+.tabs {
+  display: flex;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.tab {
+  flex: 1;
+  padding: 12px;
+  text-align: center;
+  font-weight: 600;
+  cursor: pointer;
+  background: #f9fafb;
+  color: var(--text-muted);
+  transition: all 0.2s;
+}
+
+.tab.active {
+  background: var(--primary);
+  color: #fff;
+}
+
+/* Sections */
+.hidden { display: none !important; }
+.fade-in { animation: fadeIn 0.4s ease-in; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Grid Layouts */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.item-card {
+  background: var(--surface);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+
+.item-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow);
+}
+
+.item-img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  background: #eee;
+}
+
+.item-content {
+  padding: 20px;
+  flex: 1;
+}
+
+.item-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+.badge-lost { background: #fee2e2; color: #dc2626; }
+.badge-found { background: #dcfce7; color: #16a34a; }
+.badge-event { background: #e0e7ff; color: var(--primary); }
+
+.item-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 10px 0;
+}
+
+.item-desc {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 15px;
+}
+
+.item-meta {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+
+/* Modals / Popups */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+}
+.modal-content {
+  background: white; padding: 30px; border-radius: 16px; width: 90%; max-width: 400px;
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+}
+
+.flex-between { display: flex; justify-content: space-between; align-items: center; }
+.mb-4 { margin-bottom: 16px; }
+.mt-4 { margin-top: 16px; }
+.text-error { color: #dc2626; font-size: 0.875rem; margin-top: -10px; margin-bottom: 15px; display: block; }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <h1>Campus Hub</h1>
+  <div id="navUser" class="hidden flex-between" style="gap: 15px;">
+    <span id="userEmailDisplay" style="font-weight: 500; color: var(--text-muted);"></span>
+    <button id="logoutBtn" class="btn-ghost btn-sm">Logout</button>
+  </div>
+</nav>
+
+<div class="container fade-in">
+
+  <!-- -------------------- LOGIN AREA -------------------- -->
+  <div id="authArea" class="card fade-in">
+    <div class="tabs">
+      <div id="adminTab" class="tab active" onclick="switchTab('admin')">Admin Login</div>
+      <div id="studentTab" class="tab" onclick="switchTab('student')">Student Login</div>
+    </div>
+
+    <form id="loginForm">
+      <h3 id="loginTitle">Admin Login</h3>
+      
+      <label>Email Address</label>
+      <input type="email" id="username" required placeholder="Enter your email">
+
+      <label>Password</label>
+      <input type="password" id="password" required placeholder="Enter your password">
+
+      <span id="loginError" class="text-error hidden"></span>
+
+      <button class="btn-primary" type="submit">Login to Account</button>
+    </form>
+
+    <div class="mt-4" style="display: flex; gap: 10px;">
+      <button type="button" onclick="openForgot()" class="btn-ghost">Forgot Password?</button>
+      <button type="button" onclick="openRegister()" class="btn-ghost" id="registerToggleBtn" style="display:none;">Register</button>
+    </div>
+
+    <div class="mt-4" style="border-top: 1px solid var(--border); padding-top: 15px; text-align: center;">
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">Or try the prototype instantly:</p>
+      <div style="display: flex; gap: 10px; justify-content: center;">
+        <button type="button" class="btn-ghost btn-sm" onclick="demoLogin('admin')">Demo Admin</button>
+        <button type="button" class="btn-ghost btn-sm" onclick="demoLogin('student')">Demo Student</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- -------------------- REGISTER FORM -------------------- -->
+  <div id="registerBox" class="card hidden fade-in" style="max-width: 450px; margin: 0 auto;">
+    <h3>Student Registration</h3>
+
+    <label>College Email</label>
+    <input type="email" id="regEmail" placeholder="student@college.edu">
+
+    <label>Password</label>
+    <input type="password" id="regPass" placeholder="Choose a strong password">
+
+    <button class="btn-primary mb-4" id="createAccountBtn">Create Account</button>
+    <button class="btn-ghost" onclick="closeRegister()">Back to Login</button>
+  </div>
+
+  <!-- -------------------- DASHBOARD CONTAINER -------------------- -->
+  <div id="dashboardArea" class="hidden fade-in">
+    
+    <!-- ADMIN PANEL -->
+    <div id="adminPanel" class="hidden">
+      <div class="card">
+        <h3>Pending Student Approvals</h3>
+        <ul id="pendingList" style="list-style: none; padding: 0; margin: 0;"></ul>
+      </div>
+
+      <div class="card">
+        <h3>Post a New Event</h3>
+        <label>Event Title</label>
+        <input type="text" id="eventTitle" placeholder="E.g., Annual Tech Fest">
+
+        <label>Event Description</label>
+        <textarea id="eventDesc" rows="3" placeholder="Describe the event..."></textarea>
+
+        <label>Event Poster</label>
+        <input type="file" id="eventPhoto" accept="image/*">
+
+        <button class="btn-primary" onclick="uploadEvent()">Publish Event</button>
+      </div>
+    </div>
+
+    <!-- STUDENT DASHBOARD -->
+    <div id="studentDashboard" class="hidden">
+      <div class="card">
+        <h3>Report Lost or Found Item</h3>
+        <div style="display: flex; gap: 15px;">
+          <div style="flex:1;">
+            <label>Report Type</label>
+            <select id="itemType">
+              <option value="lost">I Lost Something</option>
+              <option value="found">I Found Something</option>
+            </select>
+          </div>
+          <div style="flex:2;">
+            <label>Item Name</label>
+            <input type="text" id="lostTitle" placeholder="E.g., Blue Water Bottle">
+          </div>
+        </div>
+
+        <label>Description & Location</label>
+        <textarea id="lostDesc" rows="3" placeholder="Provide details about the item and where it was lost/found..."></textarea>
+
+        <label>Upload Image (Optional)</label>
+        <input type="file" id="lostPhoto" accept="image/*">
+
+        <button class="btn-primary" onclick="uploadItem()">Submit Report</button>
+      </div>
+    </div>
+
+    <!-- PUBLIC FEEDS -->
+    <h3 style="margin-top: 40px;">Latest Events</h3>
+    <div id="eventList" class="grid mb-4"></div>
+
+    <h3 style="margin-top: 40px;">Lost & Found Directory</h3>
+    <div id="itemList" class="grid mb-4"></div>
+
+  </div> <!-- End Dashboard Area -->
+</div>
+
+<!-- -------------------- OTP POPUP -------------------- -->
+<div id="otpBox" class="modal-overlay hidden">
+  <div class="modal-content fade-in">
+    <h3>Reset Password</h3>
+
+    <div id="otpRequestStep">
+      <label>Enter Registered Email</label>
+      <input type="email" id="otpEmailInput" placeholder="your@email.com">
+      <button class="btn-primary mb-4" id="sendOTPBtn">Send Reset OTP</button>
+    </div>
+
+    <div id="otpVerifyStep" class="hidden">
+      <div style="background: #eff6ff; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9rem; color: #1d4ed8;">
+        OTP has been sent to your email.
+      </div>
+      <label>Enter 6-digit OTP</label>
+      <input type="number" id="otpInput" placeholder="------">
+
+      <label>New Password</label>
+      <input type="password" id="newPassInput" placeholder="New strong password">
+
+      <button class="btn-primary mb-4" id="resetPassBtn">Update Password</button>
+    </div>
+
+    <button class="btn-ghost" onclick="closeForgot()">Cancel</button>
+  </div>
+</div>
+
+<script>
+const BASE_URL = "http://localhost:4000";
+let token = localStorage.getItem("token") || "";
+let currentRole = "admin";
+let resetEmail = "";
+
+// Auto-Login Check
+async function checkAuth() {
+  if (!token) return;
+  try {
+    let res = await fetch(BASE_URL + "/api/me", {
+      headers: { "Authorization": "Bearer " + token }
+    });
+    let data = await res.json();
+    if (data.success) {
+      loginSuccess(data.user.role, data.user.email);
+    } else {
+      logout();
+    }
+  } catch (err) {
+    console.log("Auto-login skipped");
+  }
+}
+checkAuth();
+
+/* -------------------- UI TOGGLES -------------------- */
+function switchTab(role) {
+  currentRole = role;
+  if(role === 'admin') {
+    document.getElementById("adminTab").classList.add("active");
+    document.getElementById("studentTab").classList.remove("active");
+    document.getElementById("loginTitle").innerText = "Admin Login";
+    document.getElementById("registerToggleBtn").style.display = "none";
+  } else {
+    document.getElementById("studentTab").classList.add("active");
+    document.getElementById("adminTab").classList.remove("active");
+    document.getElementById("loginTitle").innerText = "Student Login";
+    document.getElementById("registerToggleBtn").style.display = "inline-block";
+  }
+  document.getElementById("loginError").classList.add("hidden");
+}
+
+function openRegister() {
+  document.getElementById("authArea").classList.add("hidden");
+  document.getElementById("registerBox").classList.remove("hidden");
+}
+
+function closeRegister() {
+  document.getElementById("registerBox").classList.add("hidden");
+  document.getElementById("authArea").classList.remove("hidden");
+}
+
+function openForgot() {
+  document.getElementById("otpBox").classList.remove("hidden");
+  document.getElementById("otpRequestStep").classList.remove("hidden");
+  document.getElementById("otpVerifyStep").classList.add("hidden");
+}
+
+function closeForgot() {
+  document.getElementById("otpBox").classList.add("hidden");
+}
+
+/* -------------------- DEMO LOGIN -------------------- */
+function demoLogin(role) {
+  let email = role === 'admin' ? "kshitiz.mandola.cseds.2024@miet.ac.in" : "student@demo.com";
+  let password = role === 'admin' ? "12345678" : "password";
+  
+  // Switch tab visually
+  switchTab(role);
+  
+  // Fill the form and submit
+  document.getElementById("username").value = email;
+  document.getElementById("password").value = password;
+  
+  // Trigger form submit
+  document.getElementById("loginForm").dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+}
+
+/* -------------------- AUTHENTICATION -------------------- */
+document.getElementById("loginForm").onsubmit = async function(e) {
+  e.preventDefault();
+  let email = document.getElementById("username").value.trim();
+  let password = document.getElementById("password").value.trim();
+  let url = currentRole === "admin" ? "/api/admin/login" : "/api/student/login";
+  
+  try {
+    let res = await fetch(BASE_URL + url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
+    let data = await res.json();
+    
+    if(!data.success) {
+      let errEl = document.getElementById("loginError");
+      errEl.innerText = data.message;
+      errEl.classList.remove("hidden");
+      return;
+    }
+    
+    token = data.token;
+    localStorage.setItem("token", token);
+    loginSuccess(currentRole, email);
+  } catch (err) {
+    alert("Could not connect to server");
+  }
+}
+
+function loginSuccess(role, email) {
+  document.getElementById("authArea").classList.add("hidden");
+  document.getElementById("registerBox").classList.add("hidden");
+  document.getElementById("dashboardArea").classList.remove("hidden");
+  
+  document.getElementById("navUser").classList.remove("hidden");
+  document.getElementById("userEmailDisplay").innerText = email;
+
+  if (role === "admin") {
+    document.getElementById("adminPanel").classList.remove("hidden");
+    loadPendingUsers();
+  } else {
+    document.getElementById("studentDashboard").classList.remove("hidden");
+  }
+  
+  loadEvents();
+  loadItems();
+}
+
+document.getElementById("logoutBtn").onclick = logout;
+
+function logout() {
+  localStorage.removeItem("token");
+  location.reload();
+}
+
+/* -------------------- REGISTRATION -------------------- */
+document.getElementById("createAccountBtn").onclick = async () => {
+  let email = document.getElementById("regEmail").value.trim();
+  let pass = document.getElementById("regPass").value;
+
+  if(!email || !pass){ alert("Fill all fields"); return; }
+
+  try {
+    let res = await fetch(BASE_URL + "/api/student/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password: pass })
+    });
+    let data = await res.json();
+    alert(data.message);
+    if(data.success) closeRegister();
+  } catch (e) {
+    alert("Registration failed");
+  }
+}
+
+/* -------------------- ADMIN -------------------- */
+async function loadPendingUsers() {
+  let res = await fetch(BASE_URL + "/api/admin/pending", { headers: { "Authorization": "Bearer " + token } });
+  let data = await res.json();
+  let list = document.getElementById("pendingList");
+  list.innerHTML = "";
+
+  if(data.success && data.pending && data.pending.length > 0) {
+    data.pending.forEach(user => {
+      list.innerHTML += `
+        <li style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#f9fafb; border:1px solid var(--border); border-radius:8px; margin-bottom:10px;">
+          <span><strong>${user.email}</strong> <span style="color:var(--text-muted); font-size:0.85rem;">(Requested on ${new Date(user.created_at).toLocaleDateString()})</span></span>
+          <button class="btn-primary btn-sm" onclick="approveUser('${user.email}')">Approve Student</button>
+        </li>
+      `;
+    });
+  } else {
+    list.innerHTML = `<li style="color:var(--text-muted); padding:10px 0;">No pending approvals.</li>`;
+  }
+}
+
+async function approveUser(email){
+  await fetch(BASE_URL + "/api/admin/approve", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+    body: JSON.stringify({ email })
+  });
+  loadPendingUsers();
+}
+
+/* -------------------- EVENTS -------------------- */
+async function uploadEvent() {
+    let title = document.getElementById("eventTitle").value.trim();
+    let desc = document.getElementById("eventDesc").value.trim();
+    let photoInput = document.getElementById("eventPhoto").files[0];
+
+    if(!title || !desc){ alert("Fill all fields"); return; }
+
+    let formData = new FormData();
+    formData.append("title", title);
+    formData.append("description", desc);
+    if(photoInput) formData.append("photo", photoInput);
+
+    let res = await fetch(BASE_URL + "/api/event/upload", {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + token },
+      body: formData
+    });
+    let data = await res.json();
+    if(data.success) {
+      alert("Event Published!");
+      document.getElementById("eventTitle").value = "";
+      document.getElementById("eventDesc").value = "";
+      document.getElementById("eventPhoto").value = "";
+      loadEvents();
+    } else alert(data.message);
+}
+
+async function loadEvents() {
+    let res = await fetch(BASE_URL + "/api/events/all");
+    let allEvents = await res.json();
+    let container = document.getElementById("eventList");
+    container.innerHTML = "";
+
+    if(allEvents.length === 0) container.innerHTML = "<p style='color:var(--text-muted)'>No events available.</p>";
+
+    allEvents.forEach(ev => {
+        let photoHtml = ev.photo ? `<img src="${BASE_URL}${ev.photo}" class="item-img">` : `<div class="item-img" style="display:flex; align-items:center; justify-content:center; color:#9ca3af;">No Image provided</div>`;
+        container.innerHTML += `
+            <div class="item-card fade-in">
+                ${photoHtml}
+                <div class="item-content">
+                    <span class="item-badge badge-event">Event</span>
+                    <h4 class="item-title">${ev.title}</h4>
+                    <p class="item-desc">${ev.description}</p>
+                    <div class="item-meta">
+                      📅 ${new Date(ev.created_at).toLocaleDateString()}<br>
+                      👤 Posted by: Admin
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+}
+
+/* -------------------- ITEMS -------------------- */
+async function uploadItem() {
+    let type = document.getElementById("itemType").value;
+    let title = document.getElementById("lostTitle").value.trim();
+    let desc = document.getElementById("lostDesc").value.trim();
+    let photoInput = document.getElementById("lostPhoto").files[0];
+
+    if(!title || !desc){ alert("Fill all fields"); return; }
+
+    let formData = new FormData();
+    formData.append("type", type);
+    formData.append("title", title);
+    formData.append("description", desc);
+    if(photoInput) formData.append("photo", photoInput);
+
+    let res = await fetch(BASE_URL + "/api/upload/item", {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + token },
+      body: formData
+    });
+    let data = await res.json();
+    if(data.success) {
+      alert("Report Submitted!");
+      document.getElementById("lostTitle").value = "";
+      document.getElementById("lostDesc").value = "";
+      document.getElementById("lostPhoto").value = "";
+      loadItems();
+    } else alert(data.message);
+}
+
+async function loadItems() {
+    let res = await fetch(BASE_URL + "/api/items/all");
+    let allItems = await res.json();
+    let container = document.getElementById("itemList");
+    container.innerHTML = "";
+
+    if(allItems.length === 0) container.innerHTML = "<p style='color:var(--text-muted)'>No items reported.</p>";
+
+    allItems.forEach(item => {
+        let photoHtml = item.photo ? `<img src="${BASE_URL}${item.photo}" class="item-img">` : `<div class="item-img" style="display:flex; align-items:center; justify-content:center; color:#9ca3af;">No Image provided</div>`;
+        let badgeClass = item.type === 'lost' ? 'badge-lost' : 'badge-found';
+        
+        container.innerHTML += `
+            <div class="item-card fade-in">
+                ${photoHtml}
+                <div class="item-content">
+                    <span class="item-badge ${badgeClass}">${item.type}</span>
+                    <h4 class="item-title">${item.name || item.title}</h4>
+                    <p class="item-desc">${item.description}</p>
+                    <div class="item-meta">
+                      📅 ${new Date(item.created_at).toLocaleDateString()}<br>
+                      👤 Reported by: ${item.posted_by}
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+}
+
+/* -------------------- OTP SYSTEM -------------------- */
+document.getElementById("sendOTPBtn").onclick = async () => {
+  let email = document.getElementById("otpEmailInput").value.trim();
+  if(!email) { alert("Please enter your email"); return; }
+  
+  resetEmail = email;
+  document.getElementById("sendOTPBtn").innerText = "Sending...";
+  
+  try {
+    let res = await fetch(BASE_URL + "/api/otp/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email })
+    });
+    let data = await res.json();
+    document.getElementById("sendOTPBtn").innerText = "Send Reset OTP";
+    
+    if(data.success) {
+      alert("Prototype Mode - Your OTP is: " + data.prototypeOTP);
+      document.getElementById("otpRequestStep").classList.add("hidden");
+      document.getElementById("otpVerifyStep").classList.remove("hidden");
+    } else {
+      alert(data.message);
+    }
+  } catch (err) {
+    document.getElementById("sendOTPBtn").innerText = "Send Reset OTP";
+    alert("Failed to send OTP");
+  }
+}
+
+document.getElementById("resetPassBtn").onclick = async () => {
+  let otpEntered = document.getElementById("otpInput").value;
+  let newPass = document.getElementById("newPassInput").value;
+
+  if(!otpEntered || !newPass){ alert("Please enter OTP and new password"); return; }
+
+  try {
+    let res = await fetch(BASE_URL + "/api/otp/reset", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: resetEmail, otp: otpEntered, newPassword: newPass })
+    });
+    let data = await res.json();
+    
+    if(data.success) {
+      alert("Password updated successfully! Please login with your new password.");
+      closeForgot();
+    } else {
+      alert(data.message);
+    }
+  } catch (e) {
+    alert("Failed to reset password");
+  }
+}
+</script>
+
+</body>
+</html>
