@@ -9,7 +9,6 @@ const fs = require("fs");
 const nodemailer = require("nodemailer");
 const cors = require("cors");
 
-// ---------- CONFIG ----------
 const PORT = Number(process.env.PORT || 4000);
 const JWT_SECRET = process.env.JWT_SECRET || "supersecretkey_change";
 const UPLOAD_DIR = path.join(__dirname, "uploads");
@@ -17,7 +16,6 @@ const UPLOAD_DIR = path.join(__dirname, "uploads");
 // ensure uploads folder exists
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
-// ---------- MULTER FIX ----------
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, UPLOAD_DIR),
   filename: (req, file, cb) => {
@@ -27,13 +25,11 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// ---------- APP ----------
 const app = express();
 app.use(express.json());
 app.use(cors());
 app.use("/uploads", express.static(UPLOAD_DIR));
 
-// ---------- DB ----------
 const DB_PATH = path.join(__dirname, "db.sqlite");
 const db = new sqlite3.Database(DB_PATH, (err) => {
   if (err) console.error("SQLite error:", err);
@@ -61,7 +57,6 @@ function all(sql, params = []) {
   });
 }
 
-// ---------- DB INIT ----------
 async function initDb() {
   await run(`
     CREATE TABLE IF NOT EXISTS users (
@@ -136,7 +131,6 @@ async function initDb() {
   }
 }
 
-// ---------- AUTH HELPERS ----------
 function signToken(user) {
   return jwt.sign(
     { id: user.id, email: user.email, role: user.role },
@@ -170,12 +164,10 @@ function adminOnly(req, res, next) {
   next();
 }
 
-// ---------- ROUTES ----------
 app.get("/", (req, res) => {
   res.json({ success:true, message:"Campus Hub Backend Running ✅" });
 });
 
-// ✅ Student Register
 app.post("/api/student/register", async (req, res) => {
   const { email, password } = req.body;
   const exists = await get("SELECT * FROM users WHERE email=?", [email]);
@@ -189,7 +181,6 @@ app.post("/api/student/register", async (req, res) => {
   res.json({ success:true, message:"Registered. Wait for admin approval." });
 });
 
-// ✅ Student Login
 app.post("/api/student/login", async (req, res) => {
   const { email, password } = req.body;
   const user = await get("SELECT * FROM users WHERE email=?", [email]);
@@ -200,7 +191,6 @@ app.post("/api/student/login", async (req, res) => {
   res.json({ success:true, token: signToken(user), user: { email: user.email, role: user.role } });
 });
 
-// ✅ Admin Login
 app.post("/api/admin/login", async (req, res) => {
   const { email, password } = req.body;
   const user = await get("SELECT * FROM users WHERE email=?", [email]);
@@ -211,20 +201,17 @@ app.post("/api/admin/login", async (req, res) => {
   res.json({ success:true, token: signToken(user), user: { email: user.email, role: user.role } });
 });
 
-// ✅ Admin Pending Students
 app.get("/api/admin/pending", authMiddleware, adminOnly, async (req, res) => {
   const rows = await all("SELECT * FROM users WHERE approved=0 AND role='student'");
   res.json({ success:true, pending: rows });
 });
 
-// ✅ Admin Approve
 app.post("/api/admin/approve", authMiddleware, adminOnly, async (req, res) => {
   const { email } = req.body;
   await run("UPDATE users SET approved=1 WHERE email=?", [email]);
   res.json({ success:true, message:"Student approved" });
 });
 
-// ✅ Upload Event
 app.post("/api/event/upload", authMiddleware, adminOnly, upload.single("photo"), async (req, res) => {
   const photo = req.file ? `/uploads/${req.file.filename}` : "";
   await run(
@@ -234,13 +221,11 @@ app.post("/api/event/upload", authMiddleware, adminOnly, upload.single("photo"),
   res.json({ success:true, message:"Event uploaded" });
 });
 
-// ✅ Get Events
 app.get("/api/events/all", async (req, res) => {
   const rows = await all("SELECT * FROM events ORDER BY id DESC");
   res.json(rows);
 });
 
-// ✅ Upload Lost/Found
 app.post("/api/upload/item", authMiddleware, upload.single("photo"), async (req, res) => {
   const photo = req.file ? `/uploads/${req.file.filename}` : "";
   await run(
@@ -250,18 +235,15 @@ app.post("/api/upload/item", authMiddleware, upload.single("photo"), async (req,
   res.json({ success:true, message:"Item posted" });
 });
 
-// ✅ Get All Items
 app.get("/api/items/all", async (req, res) => {
   const rows = await all("SELECT * FROM items ORDER BY id DESC");
   res.json(rows);
 });
 
-// ✅ Get Current User
 app.get("/api/me", authMiddleware, (req, res) => {
   res.json({ success: true, user: req.user });
 });
 
-// ✅ Send OTP Route
 app.post("/api/otp/send", async (req, res) => {
   const { email } = req.body;
   const user = await get("SELECT * FROM users WHERE email=?", [email]);
@@ -276,7 +258,6 @@ app.post("/api/otp/send", async (req, res) => {
   res.json({ success:true, message:"OTP sent (Prototype)!", prototypeOTP: otp });
 });
 
-// ✅ Reset Password / OTP Route
 app.post("/api/otp/reset", async (req, res) => {
   const { email, otp, newPassword } = req.body;
   const user = await get("SELECT * FROM users WHERE email=?", [email]);
@@ -295,7 +276,6 @@ app.post("/api/otp/reset", async (req, res) => {
 });
 
 
-// ✅ START SERVER
 initDb().then(() => {
   app.listen(PORT, () => {
     console.log(`✅ Server running on port ${PORT}`);

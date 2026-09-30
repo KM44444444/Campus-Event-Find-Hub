@@ -6,7 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-/* -------------------- MODERN CSS -------------------- */
 :root {
   --primary: #00bfff;
   --primary-hover: #0099cc;
@@ -444,7 +443,6 @@ async function checkAuth() {
 }
 checkAuth();
 
-/* -------------------- UI TOGGLES -------------------- */
 function switchTab(role) {
   currentRole = role;
   if(role === 'admin') {
@@ -481,7 +479,6 @@ function closeForgot() {
   document.getElementById("otpBox").classList.add("hidden");
 }
 
-/* -------------------- DEMO LOGIN -------------------- */
 function demoLogin(role) {
   let email = role === 'admin' ? "kshitiz.mandola.cseds.2024@miet.ac.in" : "student@demo.com";
   let password = role === 'admin' ? "12345678" : "password";
@@ -497,7 +494,6 @@ function demoLogin(role) {
   document.getElementById("loginForm").dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
 }
 
-/* -------------------- AUTHENTICATION -------------------- */
 document.getElementById("loginForm").onsubmit = async function(e) {
   e.preventDefault();
   let email = document.getElementById("username").value.trim();
@@ -553,7 +549,6 @@ function logout() {
   location.reload();
 }
 
-/* -------------------- REGISTRATION -------------------- */
 document.getElementById("createAccountBtn").onclick = async () => {
   let email = document.getElementById("regEmail").value.trim();
   let pass = document.getElementById("regPass").value;
@@ -574,7 +569,6 @@ document.getElementById("createAccountBtn").onclick = async () => {
   }
 }
 
-/* -------------------- ADMIN -------------------- */
 async function loadPendingUsers() {
   let res = await fetch(BASE_URL + "/api/admin/pending", { headers: { "Authorization": "Bearer " + token } });
   let data = await res.json();
@@ -604,7 +598,6 @@ async function approveUser(email){
   loadPendingUsers();
 }
 
-/* -------------------- EVENTS -------------------- */
 async function uploadEvent() {
     let title = document.getElementById("eventTitle").value.trim();
     let desc = document.getElementById("eventDesc").value.trim();
@@ -659,7 +652,6 @@ async function loadEvents() {
     });
 }
 
-/* -------------------- ITEMS -------------------- */
 async function uploadItem() {
     let type = document.getElementById("itemType").value;
     let title = document.getElementById("lostTitle").value.trim();
@@ -718,7 +710,6 @@ async function loadItems() {
     });
 }
 
-/* -------------------- OTP SYSTEM -------------------- */
 document.getElementById("sendOTPBtn").onclick = async () => {
   let email = document.getElementById("otpEmailInput").value.trim();
   if(!email) { alert("Please enter your email"); return; }
