@@ -13,7 +13,6 @@ const PORT = Number(process.env.PORT || 4000);
 const JWT_SECRET = process.env.JWT_SECRET || "supersecretkey_change";
 const UPLOAD_DIR = path.join(__dirname, "uploads");
 
-// ensure uploads folder exists
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
 const storage = multer.diskStorage({
@@ -117,7 +116,6 @@ async function initDb() {
     console.log("✅ Admin exists:", adminEmail);
   }
 
-  // Seed Demo Student
   const demoStudentEmail = "student@demo.com";
   const demoStudentPassword = "password";
   const existingStudent = await get("SELECT * FROM users WHERE email = ?", [demoStudentEmail]);
@@ -252,7 +250,6 @@ app.post("/api/otp/send", async (req, res) => {
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   await run("INSERT INTO otps (email, otp, expires_at) VALUES (?,?,?)", [email, otp, Date.now() + 15 * 60 * 1000]);
 
-  // Simulate OTP for now (no SMTP setup required)
   console.log(`[SIMULATED EMAIL] OTP for ${email} is ${otp}`);
 
   res.json({ success:true, message:"OTP sent (Prototype)!", prototypeOTP: otp });
@@ -269,7 +266,6 @@ app.post("/api/otp/reset", async (req, res) => {
   const hash = await bcrypt.hash(newPassword, 10);
   await run("UPDATE users SET password=? WHERE email=?", [hash, email]);
   
-  // Clear used OTP
   await run("DELETE FROM otps WHERE email=?", [email]);
   
   res.json({ success:true, message:"Password updated successfully!" });

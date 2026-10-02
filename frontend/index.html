@@ -140,7 +140,6 @@ button {
   font-size: 0.875rem;
 }
 
-/* Auth Area */
 #authArea {
   max-width: 450px;
   margin: 0 auto;
@@ -170,7 +169,6 @@ button {
   color: #fff;
 }
 
-/* Sections */
 .hidden { display: none !important; }
 .fade-in { animation: fadeIn 0.4s ease-in; }
 
@@ -179,7 +177,6 @@ button {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Grid Layouts */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -247,7 +244,6 @@ button {
   padding-top: 10px;
 }
 
-/* Modals / Popups */
 .modal-overlay {
   position: fixed; top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0,0,0,0.5);
@@ -278,7 +274,6 @@ button {
 
 <div class="container fade-in">
 
-  <!-- -------------------- LOGIN AREA -------------------- -->
   <div id="authArea" class="card fade-in">
     <div class="tabs">
       <div id="adminTab" class="tab active" onclick="switchTab('admin')">Admin Login</div>
@@ -313,7 +308,6 @@ button {
     </div>
   </div>
 
-  <!-- -------------------- REGISTER FORM -------------------- -->
   <div id="registerBox" class="card hidden fade-in" style="max-width: 450px; margin: 0 auto;">
     <h3>Student Registration</h3>
 
@@ -327,10 +321,8 @@ button {
     <button class="btn-ghost" onclick="closeRegister()">Back to Login</button>
   </div>
 
-  <!-- -------------------- DASHBOARD CONTAINER -------------------- -->
   <div id="dashboardArea" class="hidden fade-in">
     
-    <!-- ADMIN PANEL -->
     <div id="adminPanel" class="hidden">
       <div class="card">
         <h3>Pending Student Approvals</h3>
@@ -352,7 +344,6 @@ button {
       </div>
     </div>
 
-    <!-- STUDENT DASHBOARD -->
     <div id="studentDashboard" class="hidden">
       <div class="card">
         <h3>Report Lost or Found Item</h3>
@@ -380,17 +371,15 @@ button {
       </div>
     </div>
 
-    <!-- PUBLIC FEEDS -->
     <h3 style="margin-top: 40px;">Latest Events</h3>
     <div id="eventList" class="grid mb-4"></div>
 
     <h3 style="margin-top: 40px;">Lost & Found Directory</h3>
     <div id="itemList" class="grid mb-4"></div>
 
-  </div> <!-- End Dashboard Area -->
+  </div>
 </div>
 
-<!-- -------------------- OTP POPUP -------------------- -->
 <div id="otpBox" class="modal-overlay hidden">
   <div class="modal-content fade-in">
     <h3>Reset Password</h3>
@@ -424,7 +413,6 @@ let token = localStorage.getItem("token") || "";
 let currentRole = "admin";
 let resetEmail = "";
 
-// Auto-Login Check
 async function checkAuth() {
   if (!token) return;
   try {
@@ -483,14 +471,11 @@ function demoLogin(role) {
   let email = role === 'admin' ? "kshitiz.mandola.cseds.2024@miet.ac.in" : "student@demo.com";
   let password = role === 'admin' ? "12345678" : "password";
   
-  // Switch tab visually
   switchTab(role);
   
-  // Fill the form and submit
   document.getElementById("username").value = email;
   document.getElementById("password").value = password;
   
-  // Trigger form submit
   document.getElementById("loginForm").dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
 }
 
